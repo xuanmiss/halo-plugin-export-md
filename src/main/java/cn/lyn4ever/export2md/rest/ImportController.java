@@ -18,6 +18,7 @@ import reactor.core.scheduler.Schedulers;
 import run.halo.app.core.extension.content.Post;
 import run.halo.app.extension.ReactiveExtensionClient;
 import run.halo.app.plugin.ApiVersion;
+import run.halo.app.plugin.PluginsRootGetter;
 
 /**
  * 自定义导入接口
@@ -40,6 +41,9 @@ public class ImportController {
     @Autowired
     private ReactiveExtensionClient reactiveClient;
 
+    @Autowired
+    private PluginsRootGetter pluginsRootGetter;
+
 
     @PostMapping(value = "/import1", consumes = {
         MediaType.TEXT_MARKDOWN_VALUE,
@@ -58,7 +62,7 @@ public class ImportController {
 
         return filePartFlux.flatMap(filePart -> {
             File file =
-                new File(FileUtil.getDocFile(FileUtil.DirPath.IMPORT).toFile().getAbsolutePath()
+                new File(pluginsRootGetter.get().resolve("export2doc_files").resolve(FileUtil.DirPath.IMPORT.name().toLowerCase()).toFile().getAbsolutePath()
                     + "/" + filePart.filename());
             return filePart.transferTo(file)
                 .flatMap(f -> importService.runTask(file));
@@ -78,10 +82,23 @@ public class ImportController {
         //保存文件
 
         return filePartFlux.publishOn(Schedulers.boundedElastic()).flatMap(filePart -> {
-            File file =
-                new File(FileUtil.getDocFile(FileUtil.DirPath.IMPORT).toFile().getAbsolutePath()
-                    + "/" + filePart.filename());
-            // importService.importPost(file,token, session);
+            String filePath = pluginsRootGetter.get().resolve("export2doc_files").resolve(FileUtil.DirPath.IMPORT.name().toLowerCase()).resolve(filePart.filename()).toString();
+
+            File file = new File(filePath);
+
+            System.out.println("File path: " + filePath); // 添加输出语句
+            System.out.println("File exists: " + file.exists()); // 输出文件是否存在
+
+            File parentDir = file.getParentFile();
+            if (!parentDir.exists()) {
+                System.out.println("Creating directory: " + parentDir.getAbsolutePath());
+                boolean created = parentDir.mkdirs(); // 创建目录
+                if (!created) {
+                    System.out.println("Failed to create directory.");
+                } else {
+                    System.out.println("Directory created successfully.");
+                }
+            }
 
             filePart.transferTo(file).block();
             return importService.runTask(file);

@@ -17,6 +17,7 @@ import run.halo.app.extension.ExtensionClient;
 import run.halo.app.extension.Metadata;
 import run.halo.app.extension.ReactiveExtensionClient;
 import run.halo.app.plugin.ApiVersion;
+import run.halo.app.plugin.PluginsRootGetter;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
@@ -49,6 +50,9 @@ public class ExportController {
     private ReactiveExtensionClient reactiveClient;
     @Autowired
     private ExtensionClient commonClient;
+
+    @Autowired
+    private PluginsRootGetter pluginsRootGetter;
 
 
     @PostMapping("/export")
@@ -123,7 +127,7 @@ public class ExportController {
             return Mono.empty();
         }
 
-        Path docFile = FileUtil.getDocFile(FileUtil.DirPath.EXPORT);
+        Path docFile = pluginsRootGetter.get().resolve("export2doc_files").resolve(FileUtil.DirPath.EXPORT.name().toLowerCase());
         File file = new File(docFile.toFile().getAbsolutePath() + "/" + path + ".zip");
         if (!file.exists()) {
             //todo 适配旧版本,未来会删除

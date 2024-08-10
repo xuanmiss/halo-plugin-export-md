@@ -25,6 +25,7 @@ import run.halo.app.extension.ExtensionClient;
 import run.halo.app.extension.Metadata;
 import run.halo.app.extension.MetadataUtil;
 import run.halo.app.extension.Ref;
+import run.halo.app.plugin.PluginsRootGetter;
 
 /**
  * @author Lyn4ever29
@@ -50,6 +51,7 @@ public class ImportServiceV1 implements ImportService {
     private final ExtensionClient client;
 
 
+    private final PluginsRootGetter pluginsRootGetter;
     /**
      * 运行导出任务
      *
@@ -59,7 +61,7 @@ public class ImportServiceV1 implements ImportService {
         long old = System.currentTimeMillis();
 
         //保存文件
-        File file = new File(FileUtil.getDocFile(FileUtil.DirPath.IMPORT).toFile().getAbsolutePath()
+        File file = new File(pluginsRootGetter.get().resolve("export2doc_files").resolve(FileUtil.DirPath.IMPORT.name().toLowerCase()).toFile().getAbsolutePath()
             + "/" + filePart.filename());
         filePart.transferTo(file).block();
 

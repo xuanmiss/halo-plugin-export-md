@@ -18,6 +18,7 @@ import run.halo.app.extension.ExtensionClient;
 import run.halo.app.extension.ListResult;
 import run.halo.app.extension.MetadataOperator;
 import run.halo.app.extension.MetadataUtil;
+import run.halo.app.plugin.PluginsRootGetter;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -55,6 +56,9 @@ public class ExportServiceImpl implements ExportService {
     @Autowired
     private ExtensionClient client;
 
+    @Autowired
+    private PluginsRootGetter pluginsRootGetter;
+
     /**
      * 运行导出任务
      *
@@ -89,7 +93,7 @@ public class ExportServiceImpl implements ExportService {
             });
         }
         //打包文件
-        File absoluteFile = FileUtil.getDocFile(FileUtil.DirPath.EXPORT).toFile().getAbsoluteFile();
+        File absoluteFile = pluginsRootGetter.get().resolve("export2doc_files").resolve(FileUtil.DirPath.EXPORT.name().toLowerCase()).toFile().getAbsoluteFile();
         ZipUtil.zip(absoluteFile + "/" + exportLogSchema.getName(), absoluteFile + "/" + exportLogSchema.getName() + ".zip");
 
         //修改状态
@@ -151,7 +155,7 @@ public class ExportServiceImpl implements ExportService {
      * @param name
      */
     private String writeContent(Post post, ContentWrapper content, String path) {
-        Path docFile = FileUtil.getDocFile(FileUtil.DirPath.EXPORT);
+        Path docFile = pluginsRootGetter.get().resolve("export2doc_files").resolve(FileUtil.DirPath.EXPORT.name().toLowerCase());
         //文件夹
         File dir = new File(docFile.toFile().getAbsoluteFile() + "/" + path);
         //判读文件夹是否存在
@@ -327,7 +331,7 @@ public class ExportServiceImpl implements ExportService {
 
     public void delete(String name) {
 
-        String fileName = FileUtil.getDocFile(FileUtil.DirPath.EXPORT).toFile().getAbsolutePath() + "/" + name;
+        String fileName = pluginsRootGetter.get().resolve("export2doc_files").resolve(FileUtil.DirPath.EXPORT.name().toLowerCase()).toFile().getAbsolutePath() + "/" + name;
 
         //删除文件夹
         cn.hutool.core.io.FileUtil.del(fileName);

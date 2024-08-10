@@ -1,8 +1,8 @@
 plugins {
     id 'java'
-    id "com.github.node-gradle.node" version "5.0.0"
+    id "com.github.node-gradle.node" version "7.0.2"
     id "io.freefair.lombok" version "8.0.1"
-    id "run.halo.plugin.devtools" version "0.0.7"
+    id "run.halo.plugin.devtools" version "0.1.1"
 }
 
 group 'cn.lyn4ever.export2doc'
@@ -16,13 +16,13 @@ repositories {
 }
 
 dependencies {
-    implementation platform('run.halo.tools.platform:plugin:2.11.0-SNAPSHOT')
+    implementation platform('run.halo.tools.platform:plugin:2.18.0-SNAPSHOT')
     compileOnly 'run.halo.app:api'
 
     testImplementation 'run.halo.app:api'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test:3.1.0'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
-    implementation 'cn.hutool:hutool-all:5.8.18'
+    implementation 'cn.hutool:hutool-all:5.8.25'
     implementation 'org.commonjava.googlecode.markdown4j:markdown4j:2.2-cj-1.0'
 
 }
@@ -32,7 +32,7 @@ test {
     //  设置编码为utf8
     systemProperty("file.encoding", "UTF-8")
 }
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
     options.encoding = "UTF-8"
 }
 
@@ -40,15 +40,17 @@ node {
     nodeProjectDir = file("${project.projectDir}/console")
 }
 
-task buildFrontend(type: PnpmTask) {
+tasks.register('buildFrontend', PnpmTask) {
     args = ['build']
 }
 
 build {
     // build frontend before build
-    tasks.getByName('compileJava').dependsOn('buildFrontend')
+    tasks.named('compileJava').configure {
+        dependsOn('buildFrontend')
+    }
 }
 
 halo {
-    version = "2.12"
+    version = "2.18"
 }
